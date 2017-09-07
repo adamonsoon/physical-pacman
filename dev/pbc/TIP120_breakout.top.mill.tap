@@ -1,0 +1,42 @@
+(.../pcb-gcode-3.6.2.4/pcb-gcode.ulp)
+(Copyright 2005 - 2012 by John Johnson)
+(See readme.txt for licensing terms.)
+(This file generated from the board:)
+(.../TIP120_breakout/TIP120_breakout.brd)
+(Current profile is .../pcb-gcode-3.6.2.4/profiles/mach.pp  )
+(This file generated 24/08/2017 23:10)
+(Settings from pcb-machine.h)
+(spindle on time = 3.0000)
+(spindle speed = 15000.0000)
+(milling depth = -1.5000)
+(tool change at 0.0000  0.0000  25.4000 )
+(feed rate xy = F80    )
+(feed rate z  = F127   )
+(Z Axis Settings)
+(  High     Up        Down     Drill)
+(12.7000 	10.0000 	-0.1000 	-1.5000 )
+(Settings from pcb-defaults.h)
+(isolate min = 0.0010)
+(isolate max = 0.0200)
+(isolate step = 0.2000)
+(Generated top outlines, top drill, )
+(Unit of measure: mm)
+(Metric Mode)
+G21
+(Absolute Coordinates)
+G90
+S15000
+G00 Z12.7000 
+G00 X0.0000  Y0.0000  
+M03
+G04 P3.000000
+G00 Z10.0000 
+G00 X-0.8000 Y-0.8000 
+G01 Z-1.5000 F127   
+G01 X-0.8000 Y66.8400 F80    
+G01 X85.8000 Y66.8400 
+G01 X85.8000 Y-0.8000 
+G01 X-0.8000 Y-0.8000 
+G00 Z12.7000 
+M05
+M02
