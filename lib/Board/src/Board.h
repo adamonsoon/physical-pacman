@@ -25,30 +25,30 @@ struct GameBoard {
   };
 };
 
-extern GameBoard getBoard();
+GameBoard getBoard();
 
-extern int getPosValue(int c, int r);
+int getPosValue(int c, int r);
 
-extern void setPosValue(int c, int r, int val);
+void setPosValue(int c, int r, int val);
 
-extern bool isPlayer(int c, int r);
+bool isPlayer(int c, int r);
 
-extern bool isEnemy(int c, int r);
+bool isEnemy(int c, int r);
 
-extern void setPlayerPosition(int c, int r, bool pulse = true);
+void setPlayerPosition(int c, int r, bool pulse = true);
 
-extern void setEnemyPosition(int c, int r, bool pulse = true);
+void setEnemyPosition(int c, int r, bool pulse = true);
 
-extern bool isOutOfBounds(int c, int r);
+bool isOutOfBounds(int c, int r);
 
-extern bool isNextOutOfBounds(int c, int r, int dir);
+bool isNextOutOfBounds(int c, int r, int dir);
 
-extern void setNextPosition(int c, int r, int dir);
+void setNextPosition(int c, int r, int dir);
 
-extern void blockEntity(int c, int r);
+void blockEntity(int c, int r);
 
-extern void mapBoardToOutput(int dir);
+void mapBoardToOutput(int dir);
 
-extern void outputBoard();
+void outputBoard();
 
 #endif

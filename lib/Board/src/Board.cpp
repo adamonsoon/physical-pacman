@@ -28,7 +28,6 @@ void setPlayerPosition(int c, int r, bool pulse) {
   setPosValue(c, r, board.player);
   if (pulse) {
     blockEntity(c, r);
-    sendPulse(getPin(c,r));
   }
 }
 
@@ -36,7 +35,6 @@ void setEnemyPosition(int c, int r, bool pulse) {
   setPosValue(c, r, board.enemy);
   if (pulse) {
     blockEntity(c, r);
-    sendPulse(getPin(c,r));
   }
 }
 
@@ -86,8 +84,21 @@ void setNextPosition(int c, int r, int dir) {
   }
 }
 
+bool shouldBlock(int c, int r) {
+  return !(isOutOfBounds(c, r) || isEnemy(c, r) || isPlayer(c, r));
+}
+
+void block(int c, int r) {
+  if (shouldBlock(c, r)) {
+    sendPulse(getPin(c, r));
+  }
+}
+
 void blockEntity(int c, int r) {
-  getPosValue(c + 1, r);
+  block(c - 1, r);
+  block(c + 1, r);
+  block(c, r - 1);
+  block(c, r + 1);
 }
 
 void outputBoard() {

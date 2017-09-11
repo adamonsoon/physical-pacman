@@ -3,11 +3,13 @@
 #include <Board.h>
 #include <Joystick.h>
 
-bool shouldOutputBoard = true;
+bool shouldOutputBoard = false;
 
 void movePlayer(int dir) {
 
-  if (!canMove()) return;
+  if (!canMove(millis(), getPreviousMove())) {
+    return;
+  }
 
   for (int c = 0; c < boardMetadata.columns; c++) {
     for (int r = 0; r < boardMetadata.rows; r++) {
@@ -22,7 +24,7 @@ void movePlayer(int dir) {
   }
 }
 
-#ifndef UNIT_TEST  // IMPORTANT LINE!
+#ifndef UNIT_TEST
 
 void setup() {
 
@@ -38,6 +40,8 @@ void setup() {
 
 void loop() {
 
+  runSchedule();
+
   int dir = getDirection(directions);
 
   if (dir != directions.none) {
@@ -47,4 +51,4 @@ void loop() {
 
 }
 
-#endif    // IMPORTANT LINE!
+#endif

@@ -8,9 +8,9 @@ struct Physics {
   const int numberOfPulses = 5;
   const int timeToReject   = 100;
   const int timeToRest     = 30;
-  const bool isOn          = LOW;
-  const bool isOff         = HIGH;
-  int pinOffset            = 3;
+  const bool isOn          = ON;
+  const bool isOff         = OFF;
+  int pinOffset            = PIN_OFFSET;
   int minPin               = 1;
   int maxPin               = 20;
   int pinMap[boardMetadata.columns][boardMetadata.rows] = {
@@ -24,16 +24,16 @@ struct Physics {
   };
 };
 
-extern Physics getPhysics();
+Physics getPhysics();
 
-extern void initPins();
+void initPins();
 
-extern void sendPulse(int pin);
+void sendPulse(int pin);
 
-extern int getPin(int c, int r);
+int getPin(int c, int r);
 
-extern void blockLeftRight(int c, int r);
+void blockLeftRight(int c, int r);
 
-extern void blockTopBottom(int c, int r);
+void blockTopBottom(int c, int r);
 
 #endif

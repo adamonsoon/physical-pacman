@@ -12,6 +12,6 @@
 #define JOY_LEFT 0
 #define JOY_RIGHT 2
 
-extern int getDirection(Directions directions);
+int getDirection(Directions directions);
 
 #endif

@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Shared.h>
 #include <Physics.h>
+#include <Scheduler.h>
 
 Physics physics;
 
@@ -15,14 +16,19 @@ void initPins() {
   }
 }
 
+void setPinMode(int pin, int mode) {
+  digitalWrite(pin, mode);
+}
+
 void sendPulse(int pin) {
-  for (int pulse = 0; pulse < physics.numberOfPulses; pulse++) {
-    digitalWrite(pin, physics.isOn);
-    delay(physics.timeToReject);
-    digitalWrite(pin, physics.isOff);
-    delay(physics.timeToRest);
+
+  unsigned long current = millis();
+
+  for (int i = 0; i < physics.numberOfPulses; i++) {
+    schedule(pin, setPinMode, ON, current);
+    schedule(pin, setPinMode, OFF, current + physics.timeToReject + 1);
+    current += physics.timeToReject + physics.timeToRest + 1;
   }
-  digitalWrite(pin, physics.isOff);
 }
 
 int getPin(int c, int r) {
