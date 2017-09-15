@@ -5,17 +5,14 @@
 #include <Player.h>
 #include <Ghost.h>
 #include <Joystick.h>
+#include <Events.h>
 #include <MemoryFree.h>
 
 Ghost randGhost = getRandomGhost();
 
 #ifndef UNIT_TEST
 
-void setup() {
-
-  Serial.begin(115200);
-  randomSeed(analogRead(6));
-
+void _init() {
   initPins();
   initJoy();
 
@@ -30,6 +27,8 @@ void setup() {
   setInitialPlayerPosition(initialPosition, directions.none);
   setRandomGhostPosition(initialRandomGhostPosition, directions.none, true, randGhost.identifier);
 
+  // moveAllToPlace();
+
   #if DEBUG
     #if OUTPUT_BOARD
       outputBoard();
@@ -37,9 +36,19 @@ void setup() {
   #endif
 }
 
+void setup() {
+  Serial.begin(115200);
+  randomSeed(analogRead(6));
+  _init();
+}
+
 void loop() {
 
   runSchedule();
+
+  if (!gameActive) {
+    return;
+  }
 
   moveGhost(randGhost.identifier);
 

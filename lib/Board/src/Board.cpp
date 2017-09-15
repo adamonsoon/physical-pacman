@@ -111,11 +111,11 @@ BoardSquare setNextPosition(BoardSquare s, int dir) {
 }
 
 bool isBlocked(BoardSquare s) {
-  return (isOutOfBounds(s) || isEnemy(s) || isPlayer(s));
+  return (isOutOfBounds(s));
 }
 
 bool shouldBlock(BoardSquare s) {
-  return !(isOutOfBounds(s) || isEnemy(s) || isPlayer(s));
+  return !(isOutOfBounds(s));
 }
 
 void block(BoardSquare s) {
@@ -190,6 +190,10 @@ void blockEntity(BoardSquare s, int dir, int delay, int tail) {
       }
     }
   }
+}
+
+bool isSamePosition(BoardSquare p1, BoardSquare p2) {
+  return (p1.x == p2.x) && (p1.y = p2.y);
 }
 
 void outputBoard() {

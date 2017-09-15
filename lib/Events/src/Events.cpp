@@ -1,5 +1,13 @@
 #include <Events.h>
 
-void dispatchEvent(int eventCode, Event eventData) {
+Event events[MAX_EVENTS_QUEUE];
 
+void dispatchExternalEvent(Event event) {
+  // Do some RF stuff
+}
+
+void dispatchInternalEvent(Event event) {
+}
+
+void internalEventObserver() {
 }

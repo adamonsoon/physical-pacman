@@ -16,6 +16,8 @@
 #define GAME_ACTIVE   1
 #define GAME_SPEED 300
 
+bool gameActive = GAME_ACTIVE;
+
 struct BoardMetadata {
   const int columns = 19;
   const int rows = 28;

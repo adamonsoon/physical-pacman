@@ -34,6 +34,7 @@ void setRandomGhostPosition(BoardSquare s, int dir, bool pulse, int identifier) 
 
 int getRandomGhostMove() {
 
+  int newDir;
   int count = 0;
 
   int xDis = randomGhost.pos.x - getPlayer().pos.x;
@@ -50,8 +51,6 @@ int getRandomGhostMove() {
   }
 
   if (isNextOutOfBounds(randomGhost.pos, randomGhost.currentDir) || randomGhost.currentDir == directions.none || isSideOpen(randomGhost.pos, randomGhost.currentDir)) {
-
-    int newDir;
 
     if (preferredDir == PREFER_X) {
       if (xDis > 0) {
@@ -84,9 +83,17 @@ int getRandomGhostMove() {
 
     randomGhost.prevDir = randomGhost.currentDir;
     randomGhost.currentDir = newDir;
-    return newDir;
+  } else {
+    newDir = randomGhost.currentDir;
   }
-  return randomGhost.currentDir;
+
+  BoardSquare nextPosition = getNextPosition(s, dir);
+
+  if (isSamePosition(nextPosition, getPlayer().pos)) {
+
+  }
+
+  return newDir;
 }
 
 void moveRandomGhost() {
