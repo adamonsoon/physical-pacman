@@ -18,8 +18,7 @@ void setup() {
   myservo.attach(9);
   myservo.write(80);// attaches the servo on pin 9 to the servo object
   Serial.begin(9600);
-   pixels.begin();
-
+  pixels.begin();
 }
 
 void loop() {

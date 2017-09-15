@@ -3,6 +3,10 @@
 #include <nRF24L01.h>
 #include <MirfHardwareSpiDriver.h>
 
+#if MY_ID == PACMAN_ID
+#include <Servo.h>
+#endif
+
 #define PACMAN_ID 10
 #define MOSTER1_ID 20
 #define MONSTER2_ID 30
@@ -17,6 +21,7 @@ byte payload[PAYLOAD_SIZE];
 #define STATE_PACMAN_DEFAULT 3
 #define STATE_MONSTER_VULNERABLE 4
 #define STATE_MONSTER_UNVULNERABLE 8
+#define STATE_MONSTER_INVISIBLE 9
 #define STATE_PACMAN_EATING 5
 #define STATE_FEASTING 6
 #define STATE_PACMAN_EATEN 7
@@ -52,10 +57,18 @@ int delayval = 0; // delay for half a second
 
 int state = STATE_PACMAN_DEFAULT;
 
+#if MY_ID == PACMAN_ID
+Servo myservo;  // create servo object to control a servo
+#endif
+
 void setup() {
   Serial.begin(9600);
   Serial.setTimeout(20);
   mirfSetup();
+#if MY_ID == PACMAN_ID
+  myservo.attach(9);
+  myservo.write(80);
+#endif
   pixels.begin(); // This initializes the NeoPixel library.
 }
 
@@ -77,6 +90,9 @@ void loop() {
       break;
     case STATE_MONSTER_UNVULNERABLE:
       state = handleUnvulnerable();
+      break;
+    case STATE_MONSTER_INVISIBLE:
+      state = handleInvisible();
       break;
     case STATE_PACMAN_EATING:
       state = handleEating();
@@ -112,9 +128,12 @@ int handleDefault() {
     pixels.setPixelColor(i, pixels.Color(vYellowVal, vYellowVal, 0)); 
   }
   vYellowVal+= vYellowDir;
-  if(vYellowVal == 0 || vYellowVal == 255) {
+  if(vYellowVal <= 0 || vYellowVal >= 100) {
     vYellowDir *= -1;
   }
+#if MY_ID == PACMAN_ID
+  myservo.write(vYellowVal*80/100);
+#endif  
   pixels.show();
   if (Serial.available()) {
     int rv = Serial.parseInt();
@@ -156,7 +175,7 @@ int handleVulnerable() {
     pixels.setPixelColor(i, pixels.Color(0, 0, vBlueVal)); 
   }
   vBlueVal+= vBlueDir;
-  if(vBlueVal == 0 || vBlueVal == 255) {
+  if(vBlueVal <= 0 || vBlueVal >= 100) {
     vBlueDir *= -1;
   }
   pixels.show();
@@ -175,10 +194,9 @@ int handleUnvulnerable() {
   return STATE_MONSTER_UNVULNERABLE;
 }
 
-int countdown;
+long countdown;
 
 int handleEating() {
-
   pixels.setPixelColor(18, pixels.Color(255, 0, 0)); // Left Eye
   pixels.setPixelColor(19, pixels.Color(255, 0, 0)); // Right Eye
   for (int i = 0; i < NUMPIXELS - 2; i++) {
@@ -264,5 +282,17 @@ void allOff() {
   }
   pixels.show();
   
+}
+
+int handleInvisible() {
+  // eyes
+  pixels.setPixelColor(18, pixels.Color(50,50,50)); // Left Eye
+  pixels.setPixelColor(19, pixels.Color(50,50,50)); // Right Eye
+  //Body lights
+  for (int i = 0; i < NUMPIXELS - 2; i++) {
+    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+  }
+  pixels.show();
+  return STATE_MONSTER_INVISIBLE;
 }
 
