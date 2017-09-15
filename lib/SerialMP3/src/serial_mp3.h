@@ -133,7 +133,7 @@ int serialmp3_checkStatus() {
     // Serial.print("SERIAL_MP3_UNKNOWN_RESPONSE("); Serial.print(b); Serial.println(")");
   }
   return result;
-} 
+}
 
 
 void serialmp3_init() {
@@ -141,7 +141,7 @@ void serialmp3_init() {
   //Wait chip initialization is complete
   delay(500);
   //wait for 200ms
-  serialmp3_sendCommand(CMD_SEL_DEV, DEV_TF);//select the TF card  
+  serialmp3_sendCommand(CMD_SEL_DEV, DEV_TF);//select the TF card
   delay(200);
 }
 
@@ -187,5 +187,3 @@ void serialmp3_next() {
 void serialmp3_prev() {
   serialmp3_sendCommand(CMD_PREV_SONG, 0);
 }
-
-

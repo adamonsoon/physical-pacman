@@ -19,33 +19,89 @@ GameBoard testBoard = getBoard();
 void test_relay_pulse(void) {
   for (int i = (testPhysics.minPin + testPhysics.pinOffset); i <= (testPhysics.maxPin + testPhysics.pinOffset); i++) {
     Serial.println(i);
-    sendPulse(i);
-    delay(100);
+    sendPulse(i, 0);
+    runSchedule();
+    delay(800);
+  }
+  runSchedule();
+}
+
+void testSetPinMode(int pin, int mode) {
+  Serial.println("Setting pin " + String(pin) + " to " + mode);
+  setPinMode(pin, mode);
+}
+
+void test_pulse(void) {
+  unsigned long current = millis();
+  int firstPin = (testPhysics.minPin + testPhysics.pinOffset);
+  int timeBetween = 100;
+
+  while (millis() < current + 3000) {
+
+    if (millis() == current) {
+      sendPulse(firstPin, 0, testSetPinMode);
+    }
+
+    if (millis() - timeBetween == current) {
+      sendPulse(firstPin + 1, 0, testSetPinMode);
+    }
+
+    if (millis() - timeBetween * 2 == current) {
+      sendPulse(firstPin + 2, 0, testSetPinMode);
+    }
+
+    runSchedule();
+
   }
 }
 
 void test_is_player(void) {
-  setPlayerPosition(0,0, false);
-  TEST_ASSERT_EQUAL_MESSAGE(true, isPlayer(0,0), "Is Player");
+  BoardSquare s;
+  s.x = 0;
+  s.y = 0;
+  setPlayerPosition(s,false);
+  TEST_ASSERT_EQUAL_MESSAGE(true, isPlayer(s), "Is Player");
 }
 
 void test_is_enemy(void) {
-  setEnemyPosition(0,0, false);
-  TEST_ASSERT_EQUAL_MESSAGE(true, isEnemy(0,0), "Is Enemy");
+  BoardSquare s;
+  s.x = 0;
+  s.y = 0;
+  setEnemyPosition(s,false);
+  TEST_ASSERT_EQUAL_MESSAGE(true, isEnemy(s), "Is Enemy");
 }
 
 void test_set_pos_value(void) {
-  setPosValue(0,0,5);
-  TEST_ASSERT_EQUAL_MESSAGE(5, getPosValue(0,0), "Set and Get 5 in pos 0,0");
+  BoardSquare s;
+  s.x = 0;
+  s.y = 0;
+  setPosValue(s,5);
+  TEST_ASSERT_EQUAL_MESSAGE(5, getPosValue(s), "Set and Get 5 in pos 0,0");
 }
 
 void test_out_of_bounds(void) {
-  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(-1, 0), "Column in pos -1");
-  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(0, -1), "Row in pos -1");
-  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(boardMetadata.columns, 0), "Column at pos c+1");
-  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(0, boardMetadata.rows), "Row at pos r+1");
-  setPosValue(0,0, testBoard.wall);
-  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(0, 0), "Set a wall at pos 0,0");
+  BoardSquare s;
+
+  s.x = -1;
+  s.y = 0;
+  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(s), "Column in pos -1");
+
+  s.x = 0;
+  s.y = -1;
+  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(s), "Row in pos -1");
+
+  s.x = boardMetadata.columns;
+  s.y = 0;
+  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(s), "Column at pos c+1");
+
+  s.x = 0;
+  s.y = boardMetadata.rows;
+  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(s), "Row at pos r+1");
+
+  s.x = 0;
+  s.y = 0;
+  setPosValue(s, testBoard.wall);
+  TEST_ASSERT_EQUAL_MESSAGE(true, isOutOfBounds(s), "Set a wall at pos 0,0");
 }
 
 void test_time_up(void) {
@@ -55,8 +111,8 @@ void test_time_up(void) {
 }
 
 void test_can_move(void) {
-  TEST_ASSERT_EQUAL_MESSAGE(false, canMove(GAME_SPEED - 200, 0), "200ms before");
-  TEST_ASSERT_EQUAL_MESSAGE(false, canMove(GAME_SPEED - 100, 0), "100ms before");
+  TEST_ASSERT_EQUAL_MESSAGE(false, canMove(GAME_SPEED - (GAME_SPEED / 2), 0), "1/2 time before");
+  TEST_ASSERT_EQUAL_MESSAGE(false, canMove(GAME_SPEED - (GAME_SPEED / 3), 0), "1/3 time before");
   TEST_ASSERT_EQUAL_MESSAGE(true, canMove(GAME_SPEED, 0), "Exact time");
   TEST_ASSERT_EQUAL_MESSAGE(true, canMove(GAME_SPEED + 1, 0), "Time passed +1");
   TEST_ASSERT_EQUAL_MESSAGE(true, canMove(GAME_SPEED + 100, 0), "Time passed +100");
@@ -64,7 +120,6 @@ void test_can_move(void) {
 
 void scheduleTester(int pin, int mode) {
   Serial.println("Scheduler executed on " + String(millis()));
-  Serial.println(String(pin) + " " + mode);
 }
 
 void test_get_available_slot(void) {
@@ -126,7 +181,10 @@ void test_schedule(void) {
 void setup() {
     delay(2000);
     UNITY_BEGIN();
-    // RUN_TEST(test_relay_pulse);
+    RUN_TEST(test_pulse);
+    RUN_TEST(test_relay_pulse);
+    UNITY_END();
+    return;
     RUN_TEST(test_is_player);
     RUN_TEST(test_is_enemy);
     RUN_TEST(test_set_pos_value);

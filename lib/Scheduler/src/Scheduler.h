@@ -1,32 +1,42 @@
+#ifndef SCHEDULER_H
+#define SCHEDULER_H
+
 #include <Arduino.h>
 #include <Shared.h>
 
-#define MAX_TASKS 20
+#define MAX_TASKS 30
 
 typedef struct Task {
   int pin;
+  PinData pinData;
   unsigned long start;
   void (*f)(int, int);
   int val;
   bool done;
 } Task;
 
-bool timeUp(unsigned long current, unsigned long previous, unsigned long ttl);
+extern bool timeUp(unsigned long current, unsigned long previous, unsigned long ttl);
 
-unsigned long getPreviousMove();
+extern unsigned long getPreviousMove();
 
-bool canMove(unsigned long current, unsigned long previous);
+extern bool canMoveGhost(unsigned long current, unsigned long previous);
 
-Task* getTasks();
+extern bool canMove(unsigned long current, unsigned long previous);
 
-void runTask(int slot);
+extern Task* getTasks();
 
-int addTask(Task task);
+extern void runTask(int slot);
 
-void completeTask(int slot);
+extern int addTask(Task task);
 
-int getAvailableTaskSlot();
+extern void completeTask(int slot);
 
-int schedule(int pin, void (*f)(int, int), int val, unsigned long start);
+extern int getAvailableTaskSlot();
 
-bool runSchedule();
+extern int schedule(int pin, void (*f)(int, int), int val, unsigned long start);
+
+extern int schedule(PinData pin, void (*f)(int, int), int val, unsigned long start);
+
+extern bool runSchedule();
+
+#endif

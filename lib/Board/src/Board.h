@@ -2,7 +2,9 @@
 #define BOARD_H
 
 #include <Shared.h>
+#include <Events.h>
 
+#define TAIL_LENGTH 2
 #define WALL   1
 #define EMPTY  0
 #define PLAYER 2
@@ -10,45 +12,68 @@
 
 struct GameBoard {
   int gameStatus = GAME_INACTIVE;
+  int tail   = TAIL_LENGTH;
   int player = PLAYER;
   int enemy  = ENEMY;
   int wall   = WALL;
   int empty  = EMPTY;
-  int layout[boardMetadata.columns][boardMetadata.rows] = {
-    { EMPTY, EMPTY, EMPTY, EMPTY },
-    { EMPTY, WALL,  WALL,  EMPTY },
-    { EMPTY, WALL,  WALL,  EMPTY },
-    { EMPTY, EMPTY, EMPTY, EMPTY },
-    { EMPTY, WALL,  WALL,  EMPTY },
-    { EMPTY, WALL,  WALL,  EMPTY },
-    { EMPTY, EMPTY, EMPTY, EMPTY }
+  byte layout[boardMetadata.columns][boardMetadata.rows] = {
+    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
+    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
+    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+    { WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL  },
+    { WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL  },
+    { EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY },
+    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
+    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
+    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
+    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
+    { EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY },
+    { WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL  },
+    { WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL  },
+    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
+    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
+    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
   };
+};
+
+struct BoardSquare {
+  int x, y;
 };
 
 GameBoard getBoard();
 
-int getPosValue(int c, int r);
+extern int getPosValue(BoardSquare s);
 
-void setPosValue(int c, int r, int val);
+extern void setPosValue(BoardSquare s, int val);
 
-bool isPlayer(int c, int r);
+extern bool isPlayer(BoardSquare s);
 
-bool isEnemy(int c, int r);
+extern bool isEnemy(BoardSquare s);
 
-void setPlayerPosition(int c, int r, bool pulse = true);
+extern void setPlayerPosition(BoardSquare s, int dir, bool pulse = true);
 
-void setEnemyPosition(int c, int r, bool pulse = true);
+extern void setEnemyPosition(BoardSquare s, int dir, bool pulse, int identifier);
 
-bool isOutOfBounds(int c, int r);
+extern bool isOutOfBounds(BoardSquare s);
 
-bool isNextOutOfBounds(int c, int r, int dir);
+extern bool isNextOutOfBounds(BoardSquare s, int dir);
 
-void setNextPosition(int c, int r, int dir);
+extern bool isSideOpen(BoardSquare s, int dir);
 
-void blockEntity(int c, int r);
+extern BoardSquare setNextEnemyPosition(BoardSquare s, int dir, int identifier);
 
-void mapBoardToOutput(int dir);
+extern BoardSquare setNextPosition(BoardSquare s, int dir);
 
-void outputBoard();
+extern void blockEntity(BoardSquare s, int dir, int delay, int tail);
+
+extern void mapBoardToOutput(int dir);
+
+extern void outputBoard();
+
+extern int getOppositDir(int dir);
 
 #endif

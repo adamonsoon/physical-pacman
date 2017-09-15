@@ -1,6 +1,6 @@
-#include "Shared.h"
-#include "Physics.h"
-#include "Board.h"
+#include <Shared.h>
+#include <Physics.h>
+#include <Board.h>
 
 GameBoard board;
 
@@ -8,106 +8,207 @@ GameBoard getBoard() {
   return board;
 }
 
-int getPosValue(int c, int r) {
-  return board.layout[c][r];
+int getPosValue(BoardSquare s) {
+  return board.layout[s.x][s.y];
 }
 
-void setPosValue(int c, int r, int val) {
-  board.layout[c][r] = val;
+void setPosValue(BoardSquare s, int val) {
+  board.layout[s.x][s.y] = val;
 }
 
-bool isPlayer(int c, int r) {
-  return getPosValue(c, r) == board.player;
+bool isPlayer(BoardSquare s) {
+  return getPosValue(s) == board.player;
 }
 
-bool isEnemy(int c, int r) {
-  return getPosValue(c, r) == board.enemy;
+bool isEnemy(BoardSquare s) {
+  return getPosValue(s) == board.enemy;
 }
 
-void setPlayerPosition(int c, int r, bool pulse) {
-  setPosValue(c, r, board.player);
+void setPlayerPosition(BoardSquare s, int dir, bool pulse) {
+  setPosValue(s, board.player);
   if (pulse) {
-    blockEntity(c, r);
+    blockEntity(s, dir, 0, board.tail);
   }
 }
 
-void setEnemyPosition(int c, int r, bool pulse) {
-  setPosValue(c, r, board.enemy);
+void setEnemyPosition(BoardSquare s, int dir, bool pulse, int identifier) {
+  setPosValue(s, identifier);
   if (pulse) {
-    blockEntity(c, r);
+    blockEntity(s, dir, 0, board.tail);
   }
 }
 
-bool isOutOfBounds(int c, int r) {
-  return getPosValue(c, r) == board.wall ||
-    (c < 0) ||
-    (c >= boardMetadata.columns ) ||
-    (r < 0) ||
-    (r >= boardMetadata.rows);
+bool isOutOfBounds(BoardSquare s) {
+  return getPosValue(s) == board.wall ||
+    (s.x < 0) ||
+    (s.x >= boardMetadata.columns ) ||
+    (s.y < 0) ||
+    (s.y >= boardMetadata.rows);
 }
 
-bool isNextOutOfBounds(int c, int r, int dir) {
+bool isNextOutOfBounds(BoardSquare s, int dir) {
+
+  BoardSquare squareOob = s;
+
   switch (dir) {
     case directions.up:
-      return isOutOfBounds(c - 1, r);
-    case directions.right:
-      return isOutOfBounds(c, r + 1);
+      squareOob.x = s.x - 1;
+      return isOutOfBounds(squareOob);
     case directions.down:
-      return isOutOfBounds(c + 1, r);
+      squareOob.x = s.x + 1;
+      return isOutOfBounds(squareOob);
+    case directions.right:
+      squareOob.y = s.y + 1;
+      return isOutOfBounds(squareOob);
     case directions.left:
-      return isOutOfBounds(c, r - 1);
+      squareOob.y = s.y - 1;
+      return isOutOfBounds(squareOob);
   }
+
   return false;
 }
 
-void setNextPosition(int c, int r, int dir) {
+BoardSquare getNextPosition(BoardSquare s, int dir) {
 
-  if (isNextOutOfBounds(c, r, dir)) {
-    return;
-  }
-
-  setPosValue(c, r, board.empty);
+  BoardSquare nextPosition = s;
 
   switch (dir) {
     case directions.up:
-      setPlayerPosition(c - 1, r);
-      break;
-    case directions.right:
-      setPlayerPosition(c, r + 1);
+      nextPosition.x = s.x - 1;
       break;
     case directions.down:
-      setPlayerPosition(c + 1, r);
+      nextPosition.x = s.x + 1;
+      break;
+    case directions.right:
+      nextPosition.y = s.y + 1;
       break;
     case directions.left:
-      setPlayerPosition(c, r - 1);
+      nextPosition.y = s.y - 1;
       break;
   }
+
+  return nextPosition;
 }
 
-bool shouldBlock(int c, int r) {
-  return !(isOutOfBounds(c, r) || isEnemy(c, r) || isPlayer(c, r));
+BoardSquare setNextEnemyPosition(BoardSquare s, int dir, int identifier) {
+  setPosValue(s, board.empty);
+  BoardSquare nextPosition = getNextPosition(s, dir);
+  setEnemyPosition(nextPosition, dir, true, identifier);
+  return nextPosition;
 }
 
-void block(int c, int r) {
-  if (shouldBlock(c, r)) {
-    sendPulse(getPin(c, r));
+BoardSquare setNextPosition(BoardSquare s, int dir) {
+
+  if (isNextOutOfBounds(s, dir)) {
+    return s;
+  }
+
+  setPosValue(s, board.empty);
+  BoardSquare nextPosition = getNextPosition(s, dir);
+  setPlayerPosition(nextPosition, dir);
+
+  return nextPosition;
+}
+
+bool isBlocked(BoardSquare s) {
+  return (isOutOfBounds(s) || isEnemy(s) || isPlayer(s));
+}
+
+bool shouldBlock(BoardSquare s) {
+  return !(isOutOfBounds(s) || isEnemy(s) || isPlayer(s));
+}
+
+void block(BoardSquare s) {
+  if (shouldBlock(s)) {
+    sendPulse(getPin(s.x, s.y), 0);
   }
 }
 
-void blockEntity(int c, int r) {
-  block(c - 1, r);
-  block(c + 1, r);
-  block(c, r - 1);
-  block(c, r + 1);
+int getOppositDir(int dir) {
+  switch (dir) {
+    case directions.up:
+      return directions.down;
+    case directions.down:
+      return directions.up;
+    case directions.right:
+      return directions.left;
+    case directions.left:
+      return directions.right;
+  }
+  return directions.none;
+}
+
+bool isSideOpen(BoardSquare s, int dir) {
+  int directionsArr[4] = { directions.up, directions.right, directions.down, directions.left };
+  int opDirection = getOppositDir(dir);
+  BoardSquare nextPositions[4];
+  bool sideOpen = false;
+
+  for (int i = 0; i < 4; i++) {
+    if (directionsArr[i] == dir) continue;
+    if (directionsArr[i] == opDirection) continue;
+    nextPositions[i] = getNextPosition(s, directionsArr[i]);
+    if (!isBlocked(nextPositions[i])) {
+      sideOpen = true;
+    }
+  }
+
+  return sideOpen;
+}
+
+void blockEntity(BoardSquare s, int dir, int delay, int tail) {
+
+  if (tail == 0) return;
+
+  int directionsArr[4] = { directions.up, directions.right, directions.down, directions.left };
+  BoardSquare nextPositions[4];
+  BoardSquare nextPosition;
+
+  int opDirection = getOppositDir(dir);
+  bool isOpDirectionBlocked = isBlocked(getNextPosition(s, opDirection));
+  bool sideOpen = false;
+
+  for (int i = 0; i < 4; i++) {
+    if (directionsArr[i] == dir) continue;
+    nextPositions[i] = getNextPosition(s, directionsArr[i]);
+    if (!(isBlocked(nextPositions[i]) || directionsArr[i] == opDirection)) {
+      sideOpen = true;
+    }
+  }
+
+  for (int i = 0; i < 4; i++) {
+    if (directionsArr[i] == dir) continue;
+    nextPosition = nextPositions[i];
+    if (!isBlocked(nextPositions[i])) {
+      if (directionsArr[i] == opDirection || isOpDirectionBlocked) {
+        if (sideOpen && tail == board.tail) tail = 1;
+        sendPulse(getPin(nextPosition.x, nextPosition.y), delay);
+        blockEntity(nextPosition, dir, delay, tail - 1);
+      } else {
+        sendPulse(getPin(nextPosition.x, nextPosition.y), delay + 100);
+        blockEntity(nextPosition, getOppositDir(directionsArr[i]), delay + 125, tail - 1);
+      }
+    }
+  }
 }
 
 void outputBoard() {
-    Serial.println(String(board.layout[0][0]) + "," + board.layout[0][1] + "," + board.layout[0][2] + "," + board.layout[0][3]);
-    Serial.println(String(board.layout[1][0]) + "," + board.layout[1][1] + "," + board.layout[1][2] + "," + board.layout[1][3]);
-    Serial.println(String(board.layout[2][0]) + "," + board.layout[2][1] + "," + board.layout[2][2] + "," + board.layout[2][3]);
-    Serial.println(String(board.layout[3][0]) + "," + board.layout[3][1] + "," + board.layout[3][2] + "," + board.layout[3][3]);
-    Serial.println(String(board.layout[4][0]) + "," + board.layout[4][1] + "," + board.layout[4][2] + "," + board.layout[4][3]);
-    Serial.println(String(board.layout[5][0]) + "," + board.layout[5][1] + "," + board.layout[5][2] + "," + board.layout[5][3]);
-    Serial.println(String(board.layout[6][0]) + "," + board.layout[6][1] + "," + board.layout[6][2] + "," + board.layout[6][3]);
+  #ifdef DEBUG
+
+    String row = "";
+
+    for (int c = 0; c < boardMetadata.columns; c++) {
+      for (int r = 0; r < boardMetadata.rows; r++) {
+        row += board.layout[c][r];
+        if (r != boardMetadata.rows - 1) {
+          row += ",";
+        }
+      }
+      Serial.println(row);
+      row = "";
+    }
+
     Serial.println("--------");
+
+  #endif
 }

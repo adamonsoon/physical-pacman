@@ -16,6 +16,11 @@ void setPreviousMove(unsigned long previous) {
   previousMove = previous;
 }
 
+bool canMoveGhost(unsigned long current, unsigned long previous) {
+  bool moveAvailable = timeUp(current, previous, GAME_SPEED);
+  return moveAvailable;
+}
+
 bool canMove(unsigned long current, unsigned long previous) {
   bool moveAvailable = timeUp(current, previous, GAME_SPEED);
   if (moveAvailable) {
@@ -58,6 +63,16 @@ int addTask(Task task) {
 int schedule(int pin, void (*f)(int, int), int val, unsigned long start) {
   Task task;
   task.pin      = pin;
+  task.start    = start;
+  task.val      = val;
+  task.f        = f;
+  task.done     = false;
+  return addTask(task);
+}
+
+int schedule(PinData pin, void (*f)(int, int), int val, unsigned long start) {
+  Task task;
+  task.pinData  = pin;
   task.start    = start;
   task.val      = val;
   task.f        = f;
