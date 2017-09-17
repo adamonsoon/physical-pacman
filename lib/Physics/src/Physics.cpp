@@ -10,12 +10,12 @@ Physics getPhysics() {
 }
 
 void initPins() {
-  for (int i = (physics.minPin + physics.pinOffset); i <= (physics.maxPin + physics.pinOffset); i++) {
+  for (byte i = (physics.minPin + physics.pinOffset); i <= (physics.maxPin + physics.pinOffset); i++) {
     pinMode(i, OUTPUT);
   }
 
-  for (int c = 0; c < boardMetadata.columns; c++) {
-    for (int r = 0; r < boardMetadata.rows; r++) {
+  for (byte c = 0; c < boardMetadata.columns; c++) {
+    for (byte r = 0; r < boardMetadata.rows; r++) {
       physics.stateMap[c][r] = (PinData) {
         .x = c,
         .y = r,
@@ -26,41 +26,41 @@ void initPins() {
   }
 }
 
-void setState(PinData pin, int state) {
+void setState(PinData pin, byte state) {
   physics.stateMap[pin.x][pin.y].state = state;
 }
 
-void setPinMode(int pin, int mode) {
+void setPinMode(byte pin, byte mode) {
   digitalWrite(pin, mode);
 }
 
-void setPinMode(PinData pin, int mode) {
+void setPinMode(PinData pin, byte mode) {
   setState(pin, mode);
 }
 
-void sendPulse(int pin, int delay, void (*setPinMode)(int, int)) {
+void sendPulse(byte pin, byte delay, void (*setPinMode)(byte, byte)) {
   unsigned long current = millis();
   schedule(pin, setPinMode, ON, current + delay);
   schedule(pin, setPinMode, OFF, current + physics.timeToReject);
 }
 
-void sendPulse(PinData pin, int delay, void (*setPinMode)(int, int)) {
+void sendPulse(PinData pin, byte delay, void (*setPinMode)(byte, byte)) {
   unsigned long current = millis();
   schedule(pin, setPinMode, ON, current + delay);
   schedule(pin, setPinMode, OFF, current + physics.timeToReject);
 }
 
-PinData getPinData(int c, int r) {
+PinData getPinData(byte c, byte r) {
   return physics.stateMap[c][r];
 }
 
-PinData getPin(int c, int r) {
+PinData getPin(byte c, byte r) {
   return physics.stateMap[c][r];
 }
 
 void mapStateToOutput() {
-  for (int c = 0; c < boardMetadata.columns; c++) {
-    for (int r = 0; r < boardMetadata.rows; r++) {
+  for (byte c = 0; c < boardMetadata.columns; c++) {
+    for (byte r = 0; r < boardMetadata.rows; r++) {
       if (physics.stateMap[c][r].pin == 0) continue;
       if (physics.stateMap[c][r].pin > 100) {
 

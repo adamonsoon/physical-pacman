@@ -5,27 +5,30 @@
 #include <Board.h>
 #include <Scheduler.h>
 
-#define STATE_NORMAL 0
-#define STATE_VULNURABLE 1
-#define STATE_INVISIBLE 2
+#define PINKY 4
+#define CLYDE 5
+
+#define STATE_GHOST_DEFAULT 0
+#define STATE_GHOST_VULNURABLE 1
+#define STATE_GHOST_INVISIBLE 2
 
 struct Ghost {
   BoardSquare pos;
-  int state;
-  int prevDir;
-  int currentDir;
-  int identifier;
+  byte state;
+  byte prevDir;
+  byte currentDir;
+  byte identifier;
   unsigned long previousMove;
 };
 
-extern Ghost& getRandomGhost();
+extern Ghost& getPinky();
 
-extern int getRandomGhostMove();
+extern Ghost& getClyde();
 
-extern void moveGhost(int identifier);
+extern void setGhostPosition(BoardSquare* s, byte dir, bool pulse, Ghost& ghost);
 
-extern void setGhostPosition(BoardSquare s, int dir, bool pulse, int identifier);
+extern byte getGhostMove(Ghost& ghost);
 
-extern void setRandomGhostPosition(BoardSquare s, int dir, bool pulse, int identifier);
+extern void moveGhost(Ghost& ghost);
 
 #endif

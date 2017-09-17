@@ -4,41 +4,51 @@
 #define PREFER_X 0
 #define PREFER_Y 1
 
-Ghost randomGhost = (Ghost) {
+Ghost clyde = (Ghost) {
   .pos = (BoardSquare) {
     .x = 0,
     .y = 0
   },
-  .state = 0,
+  .state = STATE_GHOST_DEFAULT,
   .prevDir = directions.none,
   .currentDir = directions.none,
-  .identifier = 5,
+  .identifier = CLYDE,
   .previousMove = 0
 };
 
-Ghost& getRandomGhost() {
-  return randomGhost;
+Ghost pinky = (Ghost) {
+  .pos = (BoardSquare) {
+    .x = 0,
+    .y = 0
+  },
+  .state = STATE_GHOST_DEFAULT,
+  .prevDir = directions.none,
+  .currentDir = directions.none,
+  .identifier = PINKY,
+  .previousMove = 0
+};
+
+Ghost& getPinky() {
+  return pinky;
 }
 
-void setGhostPosition(BoardSquare s, int dir, bool pulse, int identifier) {
-  if (identifier == 5) {
-    setEnemyPosition(randomGhost.pos, dir, pulse, identifier);
-  }
+Ghost& getClyde() {
+  return clyde;
 }
 
-void setRandomGhostPosition(BoardSquare s, int dir, bool pulse, int identifier) {
-  randomGhost.pos.x = s.x;
-  randomGhost.pos.y = s.y;
-  setEnemyPosition(randomGhost.pos, dir, pulse, randomGhost.identifier);
+void setGhostPosition(BoardSquare* s, byte dir, bool pulse, Ghost& ghost) {
+  ghost.pos.x = s->x;
+  ghost.pos.y = s->y;
+  setEnemyPosition(&ghost.pos, dir, pulse, ghost.identifier);
 }
 
-int getRandomGhostMove() {
+byte getGhostMove(Ghost& ghost) {
 
-  int newDir;
-  int count = 0;
+  byte newDir;
+  byte count = 0;
 
-  int xDis = randomGhost.pos.x - getPlayer().pos.x;
-  int yDis = randomGhost.pos.y - getPlayer().pos.y;
+  byte xDis = ghost.pos.x - getPlayer().pos.x;
+  byte yDis = ghost.pos.y - getPlayer().pos.y;
 
   bool preferredDir = abs(xDis) > abs(yDis);
 
@@ -50,7 +60,7 @@ int getRandomGhostMove() {
     preferredDir = PREFER_X;
   }
 
-  if (isNextOutOfBounds(randomGhost.pos, randomGhost.currentDir) || randomGhost.currentDir == directions.none || isSideOpen(randomGhost.pos, randomGhost.currentDir)) {
+  if (isNextOutOfBounds(&ghost.pos, ghost.currentDir) || ghost.currentDir == directions.none || isSideOpen(&ghost.pos, ghost.currentDir)) {
 
     if (preferredDir == PREFER_X) {
       if (xDis > 0) {
@@ -68,43 +78,44 @@ int getRandomGhostMove() {
       }
     }
 
-    bool newDirIsOppositeToCurrent = newDir == getOppositDir(randomGhost.currentDir);
-    bool newDirIsBlocked = isNextOutOfBounds(randomGhost.pos, newDir);
+    bool newDirIsOppositeToCurrent = newDir == getOppositDir(ghost.currentDir);
+    bool newDirIsBlocked = isNextOutOfBounds(&ghost.pos, newDir);
 
     while (newDirIsOppositeToCurrent || newDirIsBlocked) {
       count++;
       newDir = random(1,5);
-      newDirIsOppositeToCurrent = newDir == getOppositDir(randomGhost.currentDir);
-      newDirIsBlocked = isNextOutOfBounds(randomGhost.pos, newDir);
+      newDirIsOppositeToCurrent = newDir == getOppositDir(ghost.currentDir);
+      newDirIsBlocked = isNextOutOfBounds(&ghost.pos, newDir);
       if (count > 25) {
-        return getOppositDir(randomGhost.currentDir);
+        return getOppositDir(ghost.currentDir);
       }
     }
-
-    randomGhost.prevDir = randomGhost.currentDir;
-    randomGhost.currentDir = newDir;
+    ghost.prevDir = ghost.currentDir;
+    ghost.currentDir = newDir;
   } else {
-    newDir = randomGhost.currentDir;
+    newDir = ghost.currentDir;
   }
 
-  BoardSquare nextPosition = getNextPosition(s, dir);
+  BoardSquare nextPosition = getNextPosition(&ghost.pos, newDir);
 
-  if (isSamePosition(nextPosition, getPlayer().pos)) {
-
+  if (isSamePosition(&nextPosition, &getPlayer().pos)) {
+    setGameInactive();
+    pacmanDied(ghost.identifier);
+    return directions.none;
   }
 
   return newDir;
 }
 
-void moveRandomGhost() {
+void moveGhost(Ghost& ghost) {
   unsigned long current = millis();
-  bool movable = canMoveGhost(current, randomGhost.previousMove);
+  bool movable = canMoveGhost(current, ghost.previousMove);
   if (!movable) return;
-  randomGhost.previousMove = current;
+  ghost.previousMove = current;
 
-  BoardSquare nextPosition = setNextEnemyPosition(randomGhost.pos, getRandomGhostMove(), randomGhost.identifier);
-  randomGhost.pos.x = nextPosition.x;
-  randomGhost.pos.y = nextPosition.y;
+  BoardSquare nextPosition = setNextEnemyPosition(&ghost.pos, getGhostMove(ghost), ghost.identifier);
+  ghost.pos.x = nextPosition.x;
+  ghost.pos.y = nextPosition.y;
   delay(1000);
 
   #if DEBUG
@@ -112,16 +123,4 @@ void moveRandomGhost() {
       outputBoard();
     #endif
   #endif
-}
-
-Ghost geteGhost(int identifier) {
-    if (identifier == 5) {
-      return getRandomGhost();
-    }
-}
-
-void moveGhost(int identifier) {
-    if (identifier == 5) {
-      moveRandomGhost();
-    }
 }

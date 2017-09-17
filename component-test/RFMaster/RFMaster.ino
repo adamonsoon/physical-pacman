@@ -63,4 +63,3 @@ void rf_dispatch(int recipientId, int state) {
   while (Mirf.isSending()) {
   }
 }
-

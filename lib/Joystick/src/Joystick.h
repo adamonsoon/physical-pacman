@@ -13,6 +13,6 @@
 #define JOY_RIGHT 2
 
 extern void initJoy();
-extern int getDirection(Directions directions);
+extern byte getDirection(Directions directions);
 
 #endif

@@ -8,11 +8,11 @@
 #include <Events.h>
 #include <MemoryFree.h>
 
-Ghost randGhost = getRandomGhost();
-
 #ifndef UNIT_TEST
 
 void _init() {
+
+  setupMirf();
   initPins();
   initJoy();
 
@@ -20,14 +20,19 @@ void _init() {
   initialPosition.x = 0;
   initialPosition.y = 0;
 
-  BoardSquare initialRandomGhostPosition;
-  initialRandomGhostPosition.x = 8;
-  initialRandomGhostPosition.y = 12;
+  BoardSquare initialPinkyPosition;
+  initialPinkyPosition.x = 8;
+  initialPinkyPosition.y = 12;
 
-  setInitialPlayerPosition(initialPosition, directions.none);
-  setRandomGhostPosition(initialRandomGhostPosition, directions.none, true, randGhost.identifier);
+  BoardSquare initialClydePosition;
+  initialClydePosition.x = 8;
+  initialClydePosition.y = 15;
 
-  // moveAllToPlace();
+  setInitialPlayerPosition(&initialPosition, directions.none);
+  setGhostPosition(&initialPinkyPosition, directions.none, true, getPinky());
+  setGhostPosition(&initialClydePosition, directions.none, true, getClyde());
+
+  setGameActive();
 
   #if DEBUG
     #if OUTPUT_BOARD
@@ -46,13 +51,14 @@ void loop() {
 
   runSchedule();
 
-  if (!gameActive) {
+  if (!isGameActive()) {
     return;
   }
 
-  moveGhost(randGhost.identifier);
+  moveGhost(getPinky());
+  moveGhost(getClyde());
 
-  int dir = getDirection(directions);
+  byte dir = getDirection(directions);
 
   if (dir != directions.none) {
     movePlayer(dir);

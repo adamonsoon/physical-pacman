@@ -4,76 +4,70 @@
 #include <Shared.h>
 #include <Events.h>
 
-#define TAIL_LENGTH 2
-#define WALL   1
-#define EMPTY  0
-#define PLAYER 2
-#define ENEMY  3
-
 struct GameBoard {
-  int gameStatus = GAME_INACTIVE;
-  int tail   = TAIL_LENGTH;
-  int player = PLAYER;
-  int enemy  = ENEMY;
-  int wall   = WALL;
-  int empty  = EMPTY;
   byte layout[boardMetadata.columns][boardMetadata.rows] = {
-    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
-    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
-    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-    { WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL  },
-    { WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL  },
-    { EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY },
-    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
-    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
-    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
-    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
-    { EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY },
-    { WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL  },
-    { WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL  },
-    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
-    { EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY },
-    { EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY }
+    { EMPTY,    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY    },
+    { EMPTY,    WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY    },
+    { EMPTY,    WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY    },
+    { POWER_UP, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, POWER_UP },
+    { WALL,     WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL     },
+    { WALL,     WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL     },
+    { EMPTY,    EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY    },
+    { EMPTY,    WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY    },
+    { EMPTY,    WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY    },
+    { EMPTY,    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY,  WALL,  WALL, EMPTY, WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY    },
+    { EMPTY,    WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY    },
+    { EMPTY,    WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY,  WALL, WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY    },
+    { EMPTY,    EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY    },
+    { WALL,     WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL     },
+    { WALL,     WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL     },
+    { POWER_UP, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, POWER_UP },
+    { EMPTY,    WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY    },
+    { EMPTY,    WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY, WALL,  WALL,  EMPTY, WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  WALL,  EMPTY    },
+    { EMPTY,    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY    }
   };
 };
 
 struct BoardSquare {
-  int x, y;
+  byte x, y;
 };
 
-GameBoard getBoard();
+GameBoard& getBoard();
 
-extern int getPosValue(BoardSquare s);
+extern byte getPosValue(BoardSquare* s);
 
-extern void setPosValue(BoardSquare s, int val);
+extern void setPosValue(BoardSquare* s, byte val);
 
-extern bool isPlayer(BoardSquare s);
+extern bool isPlayer(BoardSquare* s);
 
-extern bool isEnemy(BoardSquare s);
+extern bool isEnemy(BoardSquare* s);
 
-extern void setPlayerPosition(BoardSquare s, int dir, bool pulse = true);
+extern bool isSamePosition(BoardSquare* p1, BoardSquare* p2);
 
-extern void setEnemyPosition(BoardSquare s, int dir, bool pulse, int identifier);
+extern void setPlayerPosition(BoardSquare* s, byte dir, bool pulse = true);
 
-extern bool isOutOfBounds(BoardSquare s);
+extern void setEnemyPosition(BoardSquare* s, byte dir, bool pulse, byte identifier);
 
-extern bool isNextOutOfBounds(BoardSquare s, int dir);
+extern bool isOutOfBounds(BoardSquare* s);
 
-extern bool isSideOpen(BoardSquare s, int dir);
+extern bool isNextOutOfBounds(BoardSquare* s, byte dir);
 
-extern BoardSquare setNextEnemyPosition(BoardSquare s, int dir, int identifier);
+extern bool isSideOpen(BoardSquare* s, byte dir);
 
-extern BoardSquare setNextPosition(BoardSquare s, int dir);
+extern BoardSquare getNextPosition(BoardSquare* s, byte dir);
 
-extern void blockEntity(BoardSquare s, int dir, int delay, int tail);
+extern BoardSquare setNextEnemyPosition(BoardSquare* s, byte dir, byte identifier);
 
-extern void mapBoardToOutput(int dir);
+extern BoardSquare setNextPosition(BoardSquare* s, byte dir);
+
+extern void blockEntity(BoardSquare* s, byte dir, byte delay, byte tail);
+
+extern void mapBoardToOutput(byte dir);
 
 extern void outputBoard();
 
-extern int getOppositDir(int dir);
+extern byte getOppositDir(byte dir);
+
+extern void setEnemyState(byte state, bool shouldDispatch);
 
 #endif

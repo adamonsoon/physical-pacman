@@ -7,11 +7,14 @@
 #define MAX_TASKS 30
 
 typedef struct Task {
-  int pin;
+  byte pin;
+  bool isVirtual;
   PinData pinData;
   unsigned long start;
-  void (*f)(int, int);
-  int val;
+  void (*f)(byte, byte);
+  void (*v)(byte, bool);
+  byte val;
+  byte val2;
   bool done;
 } Task;
 
@@ -25,17 +28,17 @@ extern bool canMove(unsigned long current, unsigned long previous);
 
 extern Task* getTasks();
 
-extern void runTask(int slot);
+extern void runTask(Task* task);
 
-extern int addTask(Task task);
+extern void completeTask(Task* task);
 
-extern void completeTask(int slot);
+extern byte getAvailableTaskSlot();
 
-extern int getAvailableTaskSlot();
+extern byte scheduleVirtual(void (*v)(byte, bool), byte val, byte val2, unsigned long start);
 
-extern int schedule(int pin, void (*f)(int, int), int val, unsigned long start);
+extern byte schedule(byte pin, void (*f)(byte, byte), byte val, unsigned long start);
 
-extern int schedule(PinData pin, void (*f)(int, int), int val, unsigned long start);
+extern byte schedule(PinData pin, void (*f)(byte, byte), byte val, unsigned long start);
 
 extern bool runSchedule();
 

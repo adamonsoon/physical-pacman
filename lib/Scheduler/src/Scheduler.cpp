@@ -33,8 +33,8 @@ Task* getTasks() {
   return tasks;
 }
 
-int getAvailableTaskSlot() {
-  for (int s = 0; s < MAX_TASKS; s++) {
+byte getAvailableTaskSlot() {
+  for (byte s = 0; s < MAX_TASKS; s++) {
     if (tasks[s].pin == 0 || tasks[s].done == true) {
       return s;
     }
@@ -42,57 +42,73 @@ int getAvailableTaskSlot() {
   return -1;
 }
 
-void completeTask(int slot) {
-  tasks[slot].done = true;
+void completeTask(Task* task) {
+  task->done = true;
 }
 
-void runTask(int slot) {
-  Task task = tasks[slot];
-  task.f(task.pin, task.val);
-  completeTask(slot);
+void runTask(Task* task) {
+  if (task->isVirtual) {
+    task->v(task->val, task->val2);
+  } else {
+    task->f(task->pin, task->val);
+  }
+  completeTask(task);
 }
 
-int addTask(Task task) {
-  int slot = getAvailableTaskSlot();
+byte schedule(byte pin, void (*f)(byte, byte), byte val, unsigned long start) {
+  byte slot = getAvailableTaskSlot();
   if (slot != -1) {
-    tasks[slot] = task;
+    tasks[slot].pin   = pin;
+    tasks[slot].start = start;
+    tasks[slot].val   = val;
+    tasks[slot].f     = f;
+    tasks[slot].done  = false;
   }
   return slot;
 }
 
-int schedule(int pin, void (*f)(int, int), int val, unsigned long start) {
-  Task task;
-  task.pin      = pin;
-  task.start    = start;
-  task.val      = val;
-  task.f        = f;
-  task.done     = false;
-  return addTask(task);
+byte schedule(PinData pin, void (*f)(byte, byte), byte val, unsigned long start) {
+  byte slot = getAvailableTaskSlot();
+  if (slot != -1) {
+    tasks[slot].pinData = pin;
+    tasks[slot].start   = start;
+    tasks[slot].val     = val;
+    tasks[slot].f       = f;
+    tasks[slot].done    = false;
+  }
+  return slot;
 }
 
-int schedule(PinData pin, void (*f)(int, int), int val, unsigned long start) {
-  Task task;
-  task.pinData  = pin;
-  task.start    = start;
-  task.val      = val;
-  task.f        = f;
-  task.done     = false;
-  return addTask(task);
+byte scheduleVirtual(void (*v)(byte, bool), byte val, byte val2, unsigned long start) {
+  byte slot = getAvailableTaskSlot();
+  if (slot != -1) {
+    tasks[slot].isVirtual = true;
+    tasks[slot].start     = start;
+    tasks[slot].val       = val;
+    tasks[slot].val2      = val2;
+    tasks[slot].v         = v;
+    tasks[slot].done    = false;
+  }
+  return slot;
 }
 
-bool shouldRunTask(Task task, unsigned long current) {
-  return task.done == false &&
-  task.pin != 0 &&
-  current >= task.start;
+bool shouldRunTask(Task* task, unsigned long current) {
+  if (task->isVirtual) {
+    return task->done == false &&
+    current >= task->start;
+  }
+  return task->done == false &&
+  task->pin != 0 &&
+  current >= task->start;
 }
 
 bool runSchedule() {
   bool tasksRun = false;
   unsigned long current = millis();
-  for (int s = 0; s < MAX_TASKS; s++) {
-    if (shouldRunTask(tasks[s], current)) {
+  for (byte s = 0; s < MAX_TASKS; s++) {
+    if (shouldRunTask(&tasks[s], current)) {
       tasksRun = true;
-      runTask(s);
+      runTask(&tasks[s]);
     }
   }
   return tasksRun;

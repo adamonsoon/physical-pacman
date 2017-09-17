@@ -7,7 +7,7 @@ void initJoy() {
   pinMode(A3,INPUT_PULLUP);
 }
 
-int getDirection(Directions directions) {
+byte getDirection(Directions directions) {
 
   if (digitalRead(A0) == 0) {
     return directions.left;
@@ -28,10 +28,10 @@ int getDirection(Directions directions) {
   return directions.none;
 }
 
-// int getDirection(Directions directions) {
+// byte getDirection(Directions directions) {
 //
-//   int x = map(analogRead(JOY_X), 0, 1023, 0, 2);
-//   int y = map(analogRead(JOY_Y), 0, 1023, 0, 2);
+//   byte x = map(analogRead(JOY_X), 0, 1023, 0, 2);
+//   byte y = map(analogRead(JOY_Y), 0, 1023, 0, 2);
 //
 //   switch (x) {
 //     case JOY_LEFT:

@@ -4,6 +4,7 @@
 #include <Shared.h>
 #include <Board.h>
 #include <Scheduler.h>
+#include <Events.h>
 
 #define STATE_NORMAL 0
 #define STATE_POWER_UP 1
@@ -11,15 +12,15 @@
 
 struct Player {
   BoardSquare pos;
-  int state;
-  int prevDir;
-  int currentDir;
+  byte state;
+  byte prevDir;
+  byte currentDir;
 };
 
-extern void setInitialPlayerPosition(BoardSquare s, int dir);
+extern void setInitialPlayerPosition(BoardSquare* s, byte dir);
 
 extern Player& getPlayer();
 
-extern void movePlayer(int dir);
+extern void movePlayer(byte dir);
 
 #endif
