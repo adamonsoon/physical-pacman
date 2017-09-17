@@ -3,15 +3,15 @@
 #include <nRF24L01.h>
 #include <MirfHardwareSpiDriver.h>
 
+#define PACMAN_ID 10
+#define MONSTER1_ID 20
+#define MONSTER2_ID 30
+
+#define MY_ID MONSTER2_ID
+
 #if MY_ID == PACMAN_ID
 #include <Servo.h>
 #endif
-
-#define PACMAN_ID 10
-#define MOSTER1_ID 20
-#define MONSTER2_ID 30
-
-#define MY_ID PACMAN_ID
 
 #define PAYLOAD_SIZE 2
 byte payload[PAYLOAD_SIZE];
@@ -22,19 +22,21 @@ byte payload[PAYLOAD_SIZE];
 #define STATE_MONSTER_VULNERABLE 4
 #define STATE_MONSTER_UNVULNERABLE 8
 #define STATE_MONSTER_INVISIBLE 9
+#define STATE_MONSTER_TRANSFORMING 11
 #define STATE_PACMAN_EATING 5
+#define STATE_MONSTER_EATING 10
 #define STATE_FEASTING 6
 #define STATE_PACMAN_EATEN 7
 
 // yellow
-//#define DEFAULT_R 255
-//#define DEFAULT_G 128
-//#define DEFAULT_B 0
+#define DEFAULT_R 255
+#define DEFAULT_G 128
+#define DEFAULT_B 0
 
 // pink
-#define DEFAULT_R 100
-#define DEFAULT_G 20
-#define DEFAULT_B 100
+//#define DEFAULT_R 100
+//#define DEFAULT_G 20
+//#define DEFAULT_B 100
 
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
@@ -46,7 +48,7 @@ byte payload[PAYLOAD_SIZE];
 #define PIN            6
 
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS      20
+#define NUMPIXELS 25
 
 // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
 // Note that for older NeoPixel strips you might need to change the third parameter--see the strandtest
@@ -55,7 +57,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ80
 
 int delayval = 0; // delay for half a second
 
-int state = STATE_PACMAN_DEFAULT;
+int state = STATE_MONSTER_EATING; //STATE_PACMAN_DEFAULT;
 
 #if MY_ID == PACMAN_ID
 Servo myservo;  // create servo object to control a servo
@@ -94,8 +96,14 @@ void loop() {
     case STATE_MONSTER_INVISIBLE:
       state = handleInvisible();
       break;
+    case STATE_MONSTER_TRANSFORMING:
+      state = handleTransforming();
+      break;
     case STATE_PACMAN_EATING:
       state = handleEating();
+      break;
+    case STATE_MONSTER_EATING:
+      state = handleMonsterEating();
       break;
     case STATE_FEASTING:
       state = handleFeasting();
@@ -107,14 +115,14 @@ void loop() {
 }
 
 int handleOff() {
-  pixels.setPixelColor(18, pixels.Color(0, 0, 0)); // Left Eye
-  pixels.setPixelColor(19, pixels.Color(0, 0, 0)); // Right Eye
+  pixels.setPixelColor(NUMPIXELS - 2, pixels.Color(0, 0, 0)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, pixels.Color(0, 0, 0)); // Right Eye
   //Body lights
   for (int i = 0; i < NUMPIXELS - 2; i++) {
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     pixels.setPixelColor(i, pixels.Color(0, 0, 0)); // Moderately bright green color.
-    pixels.show(); // This sends the updated pixel color to the hardware.
   }
+  pixels.show(); // This sends the updated pixel color to the hardware.
   return STATE_IDLE;
 }
 
@@ -122,8 +130,8 @@ int vYellowVal = 0;
 int vYellowDir = 1;
 
 int handleDefault() {
-  pixels.setPixelColor(18, pixels.Color(50, 50, 50)); // Left Eye
-  pixels.setPixelColor(19, pixels.Color(50, 50, 50)); // Right Eye
+  pixels.setPixelColor(NUMPIXELS - 2, pixels.Color(50, 50, 50)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, pixels.Color(50, 50, 50)); // Right Eye
   for (int i = 0; i < NUMPIXELS - 2; i++) {
     pixels.setPixelColor(i, pixels.Color(vYellowVal, vYellowVal, 0)); 
   }
@@ -169,8 +177,8 @@ int vBlueDir = 1;
 int vBlueCount = 0;
 
 int handleVulnerable() {
-  pixels.setPixelColor(18, pixels.Color(50, 50, 50)); // Left Eye
-  pixels.setPixelColor(19, pixels.Color(50, 50, 50)); // Right Eye
+  pixels.setPixelColor(NUMPIXELS - 2, pixels.Color(50, 50, 50)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, pixels.Color(50, 50, 50)); // Right Eye
   for (int i = 0; i < NUMPIXELS - 2; i++) {
     pixels.setPixelColor(i, pixels.Color(0, 0, vBlueVal)); 
   }
@@ -185,8 +193,8 @@ int handleVulnerable() {
 }
 
 int handleUnvulnerable() {
-  pixels.setPixelColor(18, pixels.Color(50, 50, 50)); // Left Eye
-  pixels.setPixelColor(19, pixels.Color(50, 50, 50)); // Right Eye
+  pixels.setPixelColor(NUMPIXELS - 2, pixels.Color(50, 50, 50)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, pixels.Color(50, 50, 50)); // Right Eye
   for (int i = 0; i < NUMPIXELS - 2; i++) {
     pixels.setPixelColor(i, pixels.Color(DEFAULT_R, DEFAULT_G, DEFAULT_B)); 
   }
@@ -197,8 +205,8 @@ int handleUnvulnerable() {
 long countdown;
 
 int handleEating() {
-  pixels.setPixelColor(18, pixels.Color(255, 0, 0)); // Left Eye
-  pixels.setPixelColor(19, pixels.Color(255, 0, 0)); // Right Eye
+  pixels.setPixelColor(NUMPIXELS-2, pixels.Color(255, 0, 0)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS-1, pixels.Color(255, 0, 0)); // Right Eye
   for (int i = 0; i < NUMPIXELS - 2; i++) {
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     pixels.setPixelColor(i, pixels.Color(255, 0, 0)); // Moderately bright green color.
@@ -226,8 +234,8 @@ int vRedDir = 2;
 int vRedCount = 0;
 
 int handleEaten() {
-  pixels.setPixelColor(18, pixels.Color(50, 50, 50)); // Left Eye
-  pixels.setPixelColor(19, pixels.Color(50, 50, 50)); // Right Eye
+  pixels.setPixelColor(NUMPIXELS - 2, pixels.Color(50, 50, 50)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, pixels.Color(50, 50, 50)); // Right Eye
   for (int i = 0; i < NUMPIXELS - 2; i++) {
     pixels.setPixelColor(i, pixels.Color(vRedVal > 127 ? 255 : 0, 0, 0)); 
   }
@@ -264,7 +272,7 @@ void mirfUpdate() {
     Mirf.getData(payload);
     if (payload[0] == MY_ID) {
       Serial.println("oh my, it's for me!");
-      if (payload[1] > 0 && payload[1] < 10) {
+      if (payload[1] > 0 && payload[1] <= 20) {
         state = payload[1];
         Serial.print("and it even carries a valid new state: "); Serial.println(state);
       }
@@ -274,8 +282,8 @@ void mirfUpdate() {
 
 void allOff() {
   // eyes
-  pixels.setPixelColor(18, 0); // Left Eye
-  pixels.setPixelColor(19, 0); // Right Eye
+  pixels.setPixelColor(NUMPIXELS - 2, 0); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, 0); // Right Eye
   //Body lights
   for (int i = 0; i < NUMPIXELS - 2; i++) {
     pixels.setPixelColor(i, pixels.Color(0, 0, 0));
@@ -286,8 +294,8 @@ void allOff() {
 
 int handleInvisible() {
   // eyes
-  pixels.setPixelColor(18, pixels.Color(50,50,50)); // Left Eye
-  pixels.setPixelColor(19, pixels.Color(50,50,50)); // Right Eye
+  pixels.setPixelColor(NUMPIXELS - 2, pixels.Color(50,50,50)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, pixels.Color(50,50,50)); // Right Eye
   //Body lights
   for (int i = 0; i < NUMPIXELS - 2; i++) {
     pixels.setPixelColor(i, pixels.Color(0, 0, 0));
@@ -296,3 +304,56 @@ int handleInvisible() {
   return STATE_MONSTER_INVISIBLE;
 }
 
+int vRGBVal = 0;
+int vRGBDir = 2;
+int vRGBCount = 1;
+
+int handleMonsterEating() {
+  pixels.setPixelColor(NUMPIXELS - 2, pixels.Color(50, 50, 50)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, pixels.Color(50, 50, 50)); // Right Eye
+  for (int i = 0; i < NUMPIXELS - 2; i++) {
+    pixels.setPixelColor(i, Wheel(vRGBVal)); 
+  }
+  vRGBVal+= vRGBDir;
+  if(vRGBVal <= 0 || vRGBVal >= 255) {
+    vRGBDir *= -1;
+  }
+  pixels.show();
+  vRGBCount++;
+  if((vRGBCount+1) % 300 == 0) {
+    allOff();
+    return STATE_MONSTER_UNVULNERABLE;
+  }
+  else {
+    return STATE_MONSTER_EATING;
+  }
+}
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return pixels.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return pixels.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return pixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+
+int handleTransforming() {
+  pixels.setPixelColor(NUMPIXELS - 2, pixels.Color(50, 50, 50)); // Left Eye
+  pixels.setPixelColor(NUMPIXELS - 1, pixels.Color(50, 50, 50)); // Right Eye
+  for (int i = 0; i < NUMPIXELS - 2; i++) {
+    pixels.setPixelColor(i, pixels.Color(0,0,vBlueVal > 127 ? 255 : 0)); 
+  }
+  pixels.show();
+  vBlueVal+= vBlueDir*3;
+  if(vBlueVal <= 0 || vBlueVal >= 255) {
+    vBlueDir *= -1;
+  }
+  return STATE_MONSTER_TRANSFORMING;
+}
